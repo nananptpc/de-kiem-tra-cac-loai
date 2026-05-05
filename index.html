@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📚 Thư viện đề kiểm tra</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: linear-gradient(135deg, #d4f1f9 0%, #b3e4f5 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        h1 {
+            font-size: 2.2rem;
+            color: #0f7b8c;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #1a5a66;
+            margin-bottom: 40px;
+        }
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 24px;
+        }
+        .test-card {
+            background: white;
+            border-radius: 28px;
+            padding: 24px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+            transition: all 0.2s;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+        .test-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(15, 123, 140, 0.2);
+            border-color: #0f7b8c;
+        }
+        .test-icon {
+            font-size: 2.5rem;
+            margin-bottom: 12px;
+        }
+        .test-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #1a4a55;
+            margin-bottom: 8px;
+        }
+        .test-desc {
+            font-size: 0.85rem;
+            color: #6c7a7f;
+            margin-bottom: 16px;
+        }
+        .test-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            color: #0f7b8c;
+            font-weight: 600;
+        }
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            color: #0a5c68;
+            font-size: 0.8rem;
+        }
+        @media (max-width: 600px) {
+            h1 { font-size: 1.6rem; }
+            .test-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>📚 Thư viện đề kiểm tra</h1>
+    <p class="subtitle">Chọn một đề thi bên dưới để bắt đầu làm bài</p>
+
+    <div class="test-grid" id="testGrid">
+        <!-- Các test sẽ được thêm vào bằng JavaScript -->
+    </div>
+    <footer>💾 Kết quả được gửi tự động vào Google Sheet của giáo viên</footer>
+</div>
+
+<script>
+    // ========== DANH SÁCH CÁC BÀI TEST ==========
+    // 👇 THÊM CÁC TEST MỚI VÀO ĐÂY (theo mẫu)
+    const TESTS = [
+        {
+            id: "cau-tao-chu-han",
+            title: "🌸 Cấu tạo chữ Hán",
+            desc: "30 câu trắc nghiệm về cấu tạo chữ Hán HSK1",
+            icon: "📖",
+            questions: 30,
+            folder: "test-1-cau-tao-chu-han"   // 👈 Tên thư mục chứa test
+        },
+        {
+            id: "ngu-am-hsk1",
+            title: "🎧 Ngữ âm HSK1",
+            desc: "25 câu trắc nghiệm ngữ âm cơ bản",
+            icon: "🔊",
+            questions: 25,
+            folder: "test-2-ngu-am"
+        }
+        // 👆 THÊM CÁC TEST KHÁC VÀO ĐÂY
+    ];
+
+    // Render danh sách test
+    function renderTests() {
+        const grid = document.getElementById('testGrid');
+        grid.innerHTML = '';
+        
+        TESTS.forEach(test => {
+            const card = document.createElement('div');
+            card.className = 'test-card';
+            card.onclick = () => {
+                window.location.href = `/${test.folder}/index.html`;
+            };
+            
+            card.innerHTML = `
+                <div class="test-icon">${test.icon}</div>
+                <div class="test-title">${test.title}</div>
+                <div class="test-desc">${test.desc}</div>
+                <div class="test-meta">
+                    <span>📝 ${test.questions} câu</span>
+                    <span>👉 Làm bài</span>
+                </div>
+            `;
+            grid.appendChild(card);
+        });
+    }
+
+    renderTests();
+</script>
+</body>
+</html>
