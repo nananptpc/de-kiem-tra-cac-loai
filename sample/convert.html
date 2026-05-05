@@ -2,160 +2,67 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chuyển CSV → data.js</title>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Montserrat', sans-serif;
-            background: linear-gradient(135deg, #d4f1f9 0%, #b3e4f5 100%);
-            min-height: 100vh;
-            padding: 40px 20px;
-        }
-        .container {
-            max-width: 1000px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 40px;
-            padding: 35px;
-            box-shadow: 0 20px 35px rgba(15, 123, 140, 0.2);
-        }
-        h1 {
-            color: #0f7b8c;
-            font-weight: 800;
-            margin-bottom: 8px;
-        }
-        textarea {
-            width: 100%;
-            padding: 18px;
-            font-family: 'Montserrat', monospace;
-            font-size: 13px;
-            background: #f5fbfd;
-            color: #1a4a55;
-            border: 2px solid #cceef5;
-            border-radius: 24px;
-            margin: 20px 0;
-            resize: vertical;
-        }
-        textarea:focus {
-            outline: none;
-            border-color: #0f7b8c;
-        }
-        button {
-            background: linear-gradient(135deg, #0f7b8c, #14919b);
-            color: white;
-            border: none;
-            padding: 12px 28px;
-            border-radius: 60px;
-            font-family: 'Montserrat', sans-serif;
-            font-weight: 600;
-            cursor: pointer;
-            margin-right: 12px;
-        }
-        .output {
-            background: #f5fbfd;
-            border: 2px dashed #0f7b8c;
-            border-radius: 24px;
-            padding: 20px;
-            font-family: monospace;
-            font-size: 12px;
-            white-space: pre-wrap;
-            max-height: 450px;
-            overflow: auto;
-            margin: 20px 0;
-            color: #1a4a55;
-        }
-        .copy-btn {
-            background: #1c9e7a;
-        }
-        .note {
-            background: #e9f7fa;
-            padding: 16px;
-            border-radius: 24px;
-            font-size: 0.85rem;
-            margin-top: 20px;
-            color: #0a5c68;
-        }
+        body { font-family: monospace; padding: 20px; background: #0f172a; color: #e2e8f0; }
+        textarea { width: 100%; height: 200px; font-family: monospace; }
+        button { margin: 10px; padding: 10px 20px; cursor: pointer; }
+        pre { background: #1e293b; padding: 15px; border-radius: 12px; overflow-x: auto; }
     </style>
 </head>
 <body>
-<div class="container">
-    <h1>🔄 Công cụ chuyển CSV → data.js</h1>
-    <p>Dán nội dung file <strong>content.csv</strong> vào ô bên dưới (bao gồm dòng tiêu đề).</p>
-    
-    <textarea id="csvInput" rows="10" placeholder="Dán nội dung CSV vào đây...&#10;id,cau_hoi,phuong_an_A,phuong_an_B,phuong_an_C,phuong_an_D,dap_an_dung&#10;1,Cau hoi 1?,A.Đap an A,B.Đap an B,C.Đap an C,D.Đap an D,A"></textarea>
-    
-    <div>
-        <button id="convertBtn">✨ Chuyển đổi</button>
-        <button id="clearBtn" style="background:#6c757d;">🗑️ Xóa</button>
-    </div>
-    
-    <h3>📄 Nội dung file data.js (copy toàn bộ)</h3>
-    <div id="outputArea" class="output">// Kết quả sẽ xuất hiện ở đây</div>
-    <button id="copyBtn" class="copy-btn">📋 Copy vào clipboard</button>
-    
-    <div class="note">
-        💡 <strong>Hướng dẫn:</strong><br>
-        1. Dán nội dung file <strong>content.csv</strong> vào ô trên.<br>
-        2. Nhấn "Chuyển đổi".<br>
-        3. Copy kết quả trong khung màu xanh.<br>
-        4. Dán vào file <strong>data.js</strong> (thay thế toàn bộ nội dung cũ).<br>
-        5. Commit lên GitHub. Trang <strong>index.html</strong> sẽ tự động dùng dữ liệu mới.
-    </div>
-</div>
+    <h2>🔄 Chuyển CSV → data.js</h2>
+    <textarea id="csvInput" placeholder="Dán nội dung CSV vào đây..."></textarea>
+    <br>
+    <button id="convertBtn">✨ Chuyển đổi</button>
+    <button id="copyBtn">📋 Copy</button>
+    <h3>Kết quả (copy toàn bộ vào data.js):</h3>
+    <pre id="output"></pre>
 
-<script>
-    function csvToDataJs(csvText) {
-        const lines = csvText.trim().split(/\r?\n/);
-        if (lines.length < 2) return "// Lỗi: CSV phải có ít nhất 2 dòng (header + dữ liệu)";
-        
-        const headers = lines[0].split(',').map(h => h.trim());
-        const required = ['id', 'cau_hoi', 'phuong_an_A', 'phuong_an_B', 'phuong_an_C', 'phuong_an_D', 'dap_an_dung'];
-        for (let r of required) {
-            if (!headers.includes(r)) {
-                return `// Lỗi: Thiếu cột "${r}" trong header. Header hiện tại: ${headers.join(', ')}`;
-            }
-        }
-        
-        const questions = [];
-        for (let i = 1; i < lines.length; i++) {
-            if (!lines[i].trim()) continue;
-            const parts = lines[i].split(',').map(p => p.trim());
-            if (parts.length < 7) continue;
+    <script>
+        function csvToDataJs(csvText) {
+            const lines = csvText.trim().split(/\r?\n/);
+            if (lines.length < 2) return "// Lỗi: CSV phải có header + dữ liệu";
             
-            questions.push({
-                id: parseInt(parts[0]),
-                text: parts[1],
-                options: [parts[2], parts[3], parts[4], parts[5]],
-                correct: parts[6].toUpperCase()
-            });
+            const headers = lines[0].split(',').map(h => h.trim());
+            const questions = [];
+            
+            for (let i = 1; i < lines.length; i++) {
+                if (!lines[i].trim()) continue;
+                const parts = lines[i].split(',').map(p => p.trim());
+                if (parts.length < 7) continue;
+                
+                questions.push({
+                    id: parseInt(parts[0]),
+                    text: parts[1],
+                    options: [
+                        "A. " + parts[2],
+                        "B. " + parts[3],
+                        "C. " + parts[4],
+                        "D. " + parts[5]
+                    ],
+                    correct: parts[6].toUpperCase()
+                });
+            }
+            
+            let jsContent = "// ========== DỮ LIỆU TỪ CSV ==========\n";
+            jsContent += "const QUESTIONS = " + JSON.stringify(questions, null, 2) + ";\n\n";
+            jsContent += "const TOTAL_QUESTIONS = QUESTIONS.length;\n";
+            return jsContent;
         }
         
-        let jsContent = "// ========== DỮ LIỆU TỪ CSV ==========\n";
-        jsContent += "const QUESTIONS = " + JSON.stringify(questions, null, 2) + ";\n\n";
-        jsContent += "const TOTAL_QUESTIONS = QUESTIONS.length;\n";
-        return jsContent;
-    }
-    
-    document.getElementById('convertBtn').addEventListener('click', () => {
-        const csv = document.getElementById('csvInput').value;
-        if (!csv.trim()) { alert('Hãy dán nội dung CSV vào ô!'); return; }
-        const result = csvToDataJs(csv);
-        document.getElementById('outputArea').innerText = result;
-    });
-    
-    document.getElementById('clearBtn').addEventListener('click', () => {
-        document.getElementById('csvInput').value = '';
-        document.getElementById('outputArea').innerText = '// Kết quả chuyển đổi sẽ xuất hiện ở đây';
-    });
-    
-    document.getElementById('copyBtn').addEventListener('click', () => {
-        const code = document.getElementById('outputArea').innerText;
-        if (!code || code.includes('Lỗi')) { alert('Chưa có dữ liệu hợp lệ để copy.'); return; }
-        navigator.clipboard.writeText(code);
-        alert('✅ Đã copy nội dung vào clipboard! Dán vào file data.js');
-    });
-</script>
+        document.getElementById('convertBtn').onclick = () => {
+            const csv = document.getElementById('csvInput').value;
+            if (!csv.trim()) { alert('Hãy dán CSV vào!'); return; }
+            document.getElementById('output').innerText = csvToDataJs(csv);
+        };
+        
+        document.getElementById('copyBtn').onclick = () => {
+            const code = document.getElementById('output').innerText;
+            if (!code) { alert('Chưa có kết quả!'); return; }
+            navigator.clipboard.writeText(code);
+            alert('✅ Đã copy! Dán vào file data.js');
+        };
+    </script>
 </body>
 </html>
