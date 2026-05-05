@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chuyển CSV → data.js</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            background: #1e2a3e;
+            padding: 30px 20px;
+            color: #e2e8f0;
+        }
+        .container {
+            max-width: 1000px;
+            margin: auto;
+            background: #0f172a;
+            border-radius: 32px;
+            padding: 25px;
+            box-shadow: 0 20px 35px rgba(0,0,0,0.3);
+        }
+        h1 { color: #7dd3fc; margin-top: 0; }
+        textarea {
+            width: 100%;
+            padding: 15px;
+            font-family: monospace;
+            font-size: 14px;
+            background: #1e293b;
+            color: #f1f5f9;
+            border: 1px solid #334155;
+            border-radius: 20px;
+            margin: 15px 0;
+        }
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 60px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-right: 12px;
+        }
+        button:hover { background: #2563eb; }
+        .output {
+            background: #0f172a;
+            border: 2px dashed #3b82f6;
+            border-radius: 24px;
+            padding: 15px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            font-size: 13px;
+            max-height: 400px;
+            overflow: auto;
+        }
+        .copy-btn {
+            background: #10b981;
+            margin-top: 10px;
+        }
+        .note {
+            background: #334155;
+            padding: 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>🔄 Công cụ chuyển CSV ➜ data.js</h1>
+    <p>Dán nội dung file <strong>content.csv</strong> vào ô bên dưới (bao gồm dòng tiêu đề).</p>
+    
+    <textarea id="csvInput" rows="10" placeholder="Dán nội dung CSV vào đây...&#10;id,cau_hoi,phuong_an_A,phuong_an_B,phuong_an_C,phuong_an_D,dap_an_dung&#10;1,Cau hoi 1?,A.Đap an A,B.Đap an B,C.Đap an C,D.Đap an D,A"></textarea>
+    
+    <div>
+        <button id="convertBtn">✨ Chuyển đổi sang data.js</button>
+        <button id="clearBtn" style="background:#475569;">🗑️ Xóa</button>
+    </div>
+    
+    <h3>📄 Nội dung file data.js (copy toàn bộ)</h3>
+    <div id="outputArea" class="output"></div>
+    <button id="copyBtn" class="copy-btn">📋 Copy toàn bộ</button>
+    
+    <div class="note">
+        💡 <strong>Hướng dẫn:</strong><br>
+        1. Dán nội dung file content.csv (có header) vào ô trên.<br>
+        2. Nhấn "Chuyển đổi".<br>
+        3. Copy kết quả trong khung, dán vào file <code>data.js</code> (thay thế toàn bộ nội dung cũ).<br>
+        4. Lưu và commit lên GitHub. Trang <code>index.html</code> sẽ tự động dùng dữ liệu mới.
+    </div>
+</div>
+
+<script>
+    function csvToDataJs(csvText) {
+        // Tách dòng
+        const lines = csvText.trim().split(/\r?\n/);
+        if (lines.length < 2) return "// Lỗi: CSV phải có ít nhất 2 dòng (header + dữ liệu)";
+        
+        const headers = lines[0].split(',').map(h => h.trim());
+        // Kiểm tra các cột bắt buộc
+        const required = ['id', 'cau_hoi', 'phuong_an_A', 'phuong_an_B', 'phuong_an_C', 'phuong_an_D', 'dap_an_dung'];
+        for (let r of required) {
+            if (!headers.includes(r)) {
+                return `// Lỗi: Thiếu cột "${r}" trong header. Header hiện tại: ${headers.join(', ')}`;
+            }
+        }
+        
+        const questions = [];
+        for (let i = 1; i < lines.length; i++) {
+            if (!lines[i].trim()) continue;
+            // Xử lý trường hợp trong câu hỏi có dấu phẩy -> dùng regex đơn giản tách theo dấu phẩy nhưng không ngoặc
+            // Ở đây dùng split đơn giản vì dữ liệu mẫu không có dấu phẩy trong nội dung
+            const parts = lines[i].split(',').map(p => p.trim());
+            if (parts.length < 7) continue;
+            
+            const id = parseInt(parts[0]);
+            const cauHoi = parts[1];
+            const optA = parts[2];
+            const optB = parts[3];
+            const optC = parts[4];
+            const optD = parts[5];
+            const dapAn = parts[6].toUpperCase();
+            
+            questions.push({
+                id: id,
+                text: cauHoi,
+                options: [optA, optB, optC, optD],
+                correct: dapAn
+            });
+        }
+        
+        // Tạo nội dung file data.js
+        let jsContent = "// ========== DỮ LIỆU TỪ CSV ==========\n";
+        jsContent += "const QUESTIONS = " + JSON.stringify(questions, null, 2) + ";\n\n";
+        jsContent += "const TOTAL_QUESTIONS = QUESTIONS.length;\n";
+        jsContent += "// Export (nếu dùng module, nhưng dùng script tag thì chỉ cần global)\n";
+        jsContent += "if (typeof module !== 'undefined' && module.exports) {\n";
+        jsContent += "  module.exports = { QUESTIONS, TOTAL_QUESTIONS };\n";
+        jsContent += "}\n";
+        
+        return jsContent;
+    }
+    
+    document.getElementById('convertBtn').addEventListener('click', () => {
+        const csv = document.getElementById('csvInput').value;
+        if (!csv.trim()) {
+            alert('Hãy dán nội dung CSV vào ô!');
+            return;
+        }
+        const result = csvToDataJs(csv);
+        document.getElementById('outputArea').innerText = result;
+    });
+    
+    document.getElementById('clearBtn').addEventListener('click', () => {
+        document.getElementById('csvInput').value = '';
+        document.getElementById('outputArea').innerText = '// Kết quả chuyển đổi sẽ xuất hiện ở đây';
+    });
+    
+    document.getElementById('copyBtn').addEventListener('click', () => {
+        const code = document.getElementById('outputArea').innerText;
+        if (!code || code.startsWith('// Lỗi')) {
+            alert('Chưa có dữ liệu hợp lệ để copy. Hãy chuyển đổi trước.');
+            return;
+        }
+        navigator.clipboard.writeText(code).then(() => {
+            alert('✅ Đã copy nội dung data.js vào clipboard! Dán vào file data.js');
+        }).catch(() => {
+            alert('❌ Không thể copy tự động, hãy bôi đen và copy thủ công.');
+        });
+    });
+</script>
+</body>
+</html>
