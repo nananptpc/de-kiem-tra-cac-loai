@@ -24,7 +24,6 @@
             margin: 0 auto;
         }
         
-        /* Header Card */
         .header-card {
             background: linear-gradient(135deg, #0f7b8c 0%, #14919b 100%);
             border-radius: 32px;
@@ -47,7 +46,6 @@
             font-weight: 500;
         }
         
-        /* Score Panel */
         .score-panel {
             background: white;
             border-radius: 28px;
@@ -92,7 +90,6 @@
             transition: width 0.3s ease;
         }
         
-        /* Student Info */
         .student-info {
             background: white;
             border-radius: 28px;
@@ -120,7 +117,6 @@
             box-shadow: 0 0 0 3px rgba(15, 123, 140, 0.1);
         }
         
-        /* Questions */
         .questions-area {
             display: flex;
             flex-direction: column;
@@ -206,7 +202,6 @@
             color: #9e2a2a !important;
         }
         
-        /* Buttons */
         .btn-primary {
             background: linear-gradient(135deg, #0f7b8c 0%, #14919b 100%);
             border: none;
@@ -308,8 +303,26 @@
 
 <script src="data.js"></script>
 <script>
-    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxpxWRfxZ9FJE0XZjdNnBmfhjIsrmcH1NWlohQPDEgOO7gGR-56t2rTR17zYxaP-noH/exec";  // 👈 Thay bằng URL của bạn
+    // 👇 THAY URL NÀY BẰNG LINK GOOGLE SHEET CỦA BẠN
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxpxWRfxZ9FJE0XZjdNnBmfhjIsrmcH1NWlohQPDEgOO7gGR-56t2rTR17zYxaP-noH/exec";
     const SHEET_TAB_NAME = "DeThiMau";
+    
+    // Chuyển đổi dữ liệu từ JSON cũ sang format mới
+    let QUESTIONS = [];
+    if (typeof rawQuizData !== 'undefined') {
+        QUESTIONS = rawQuizData.map(item => ({
+            id: item.id,
+            text: item.cau_hoi,
+            options: [
+                "A. " + item.phuong_an_A,
+                "B. " + item.phuong_an_B,
+                "C. " + item.phuong_an_C,
+                "D. " + item.phuong_an_D
+            ],
+            correct: item.dap_an_dung
+        }));
+    }
+    const TOTAL_QUESTIONS = QUESTIONS.length;
     
     let userAnswers = {};
     let submitted = false;
@@ -322,8 +335,8 @@
             card.className = 'question-card';
             card.dataset.qid = q.id;
             let optsHtml = '';
-            q.options.forEach(opt => {
-                const letter = opt.charAt(0);
+            q.options.forEach((opt, idx) => {
+                const letter = String.fromCharCode(65 + idx); // A, B, C, D
                 const isSelected = (userAnswers[q.id] === letter);
                 let extraClass = '';
                 if (submitted) {
@@ -331,11 +344,10 @@
                     else if (isSelected && letter !== q.correct) extraClass = 'wrong-highlight';
                 }
                 optsHtml += `<div class="option ${isSelected ? 'selected' : ''} ${extraClass}" data-val="${letter}">
-                                <input type="radio" name="q${q.id}" value="${letter}" ${isSelected ? 'checked' : ''} style="display:none;">
                                 <span>${opt}</span>
                             </div>`;
             });
-            card.innerHTML = `<div class="question-text">${q.text}</div><div class="options">${optsHtml}</div>`;
+            card.innerHTML = `<div class="question-text">${q.id}. ${q.text}</div><div class="options">${optsHtml}</div>`;
             container.appendChild(card);
         });
         attachEvents();
@@ -346,13 +358,13 @@
         document.querySelectorAll('.option').forEach(opt => {
             opt.addEventListener('click', () => {
                 if (submitted) { showMsg('📌 Đã nộp bài, hãy nhấn "Làm lại" để làm mới.', 'warning'); return; }
-                const parent = opt.parentElement;
-                parent.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
+                const parent = opt.parentElement.parentElement;
+                const optionsDiv = parent.querySelector('.options');
+                optionsDiv.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
                 opt.classList.add('selected');
-                const radio = opt.querySelector('input[type="radio"]');
-                if (radio) radio.checked = true;
-                const qid = opt.closest('.question-card').dataset.qid;
-                userAnswers[qid] = radio.value;
+                const qid = parseInt(parent.closest('.question-card').dataset.qid);
+                const letter = opt.dataset.val;
+                userAnswers[qid] = letter;
                 saveToLocal();
                 updateStatsAndScore();
             });
@@ -379,6 +391,7 @@
     }
     
     function saveToLocal() { localStorage.setItem('quiz_data', JSON.stringify({ answers: userAnswers, submitted: false })); }
+    
     function loadFromLocal() {
         const raw = localStorage.getItem('quiz_data');
         if (raw) try { const d = JSON.parse(raw); userAnswers = d.answers || {}; } catch(e) {}
