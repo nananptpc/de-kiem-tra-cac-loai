@@ -24,7 +24,6 @@
             margin: 0 auto;
         }
         
-        /* Header Card */
         .header-card {
             background: linear-gradient(135deg, #0f7b8c 0%, #14919b 100%);
             border-radius: 32px;
@@ -47,7 +46,6 @@
             font-weight: 500;
         }
         
-        /* Score Panel */
         .score-panel {
             background: white;
             border-radius: 28px;
@@ -92,7 +90,6 @@
             transition: width 0.3s ease;
         }
         
-        /* Student Info */
         .student-info {
             background: white;
             border-radius: 28px;
@@ -120,7 +117,6 @@
             box-shadow: 0 0 0 3px rgba(15, 123, 140, 0.1);
         }
         
-        /* Questions */
         .questions-area {
             display: flex;
             flex-direction: column;
@@ -206,7 +202,6 @@
             color: #9e2a2a !important;
         }
         
-        /* Buttons */
         .btn-primary {
             background: linear-gradient(135deg, #0f7b8c 0%, #14919b 100%);
             border: none;
@@ -308,22 +303,49 @@
 
 <script src="data.js"></script>
 <script>
-    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxpxWRfxZ9FJE0XZjdNnBmfhjIsrmcH1NWlohQPDEgOO7gGR-56t2rTR17zYxaP-noH/exec";  // 👈 Thay bằng URL của bạn
+    // 👇 THAY URL NÀY BẰNG LINK GOOGLE SHEET CỦA BẠN
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxpxWRfxZ9FJE0XZjdNnBmfhjIsrmcH1NWlohQPDEgOO7gGR-56t2rTR17zYxaP-noH/exec";
     const SHEET_TAB_NAME = "CauTaoChuHan";
+    
+    // Chuyển đổi dữ liệu từ JSON sang format hiển thị
+    let QUESTIONS = [];
+    if (typeof rawQuizData !== 'undefined') {
+        QUESTIONS = rawQuizData.map(item => ({
+            id: item.id,
+            text: item.cau_hoi,
+            options: [
+                "A. " + item.phuong_an_A,
+                "B. " + item.phuong_an_B,
+                "C. " + item.phuong_an_C,
+                "D. " + item.phuong_an_D
+            ],
+            correct: item.dap_an_dung
+        }));
+    }
+    
+    // Tổng số câu hỏi - KHÔNG dùng const để tránh lỗi khai báo trùng
+    let TOTAL_QUESTIONS = QUESTIONS.length;
     
     let userAnswers = {};
     let submitted = false;
     
     function renderQuestions() {
         const container = document.getElementById('questionsContainer');
+        if (!container) return;
         container.innerHTML = '';
+        
+        if (QUESTIONS.length === 0) {
+            container.innerHTML = '<div class="question-card" style="color:red; text-align:center;">❌ Không tìm thấy dữ liệu câu hỏi. Vui lòng kiểm tra file data.js!</div>';
+            return;
+        }
+        
         QUESTIONS.forEach(q => {
             const card = document.createElement('div');
             card.className = 'question-card';
             card.dataset.qid = q.id;
             let optsHtml = '';
-            q.options.forEach(opt => {
-                const letter = opt.charAt(0);
+            q.options.forEach((opt, idx) => {
+                const letter = String.fromCharCode(65 + idx);
                 const isSelected = (userAnswers[q.id] === letter);
                 let extraClass = '';
                 if (submitted) {
@@ -331,11 +353,10 @@
                     else if (isSelected && letter !== q.correct) extraClass = 'wrong-highlight';
                 }
                 optsHtml += `<div class="option ${isSelected ? 'selected' : ''} ${extraClass}" data-val="${letter}">
-                                <input type="radio" name="q${q.id}" value="${letter}" ${isSelected ? 'checked' : ''} style="display:none;">
                                 <span>${opt}</span>
                             </div>`;
             });
-            card.innerHTML = `<div class="question-text">${q.text}</div><div class="options">${optsHtml}</div>`;
+            card.innerHTML = `<div class="question-text">${q.id}. ${q.text}</div><div class="options">${optsHtml}</div>`;
             container.appendChild(card);
         });
         attachEvents();
@@ -344,19 +365,26 @@
     
     function attachEvents() {
         document.querySelectorAll('.option').forEach(opt => {
-            opt.addEventListener('click', () => {
-                if (submitted) { showMsg('📌 Đã nộp bài, hãy nhấn "Làm lại" để làm mới.', 'warning'); return; }
-                const parent = opt.parentElement;
-                parent.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
-                opt.classList.add('selected');
-                const radio = opt.querySelector('input[type="radio"]');
-                if (radio) radio.checked = true;
-                const qid = opt.closest('.question-card').dataset.qid;
-                userAnswers[qid] = radio.value;
-                saveToLocal();
-                updateStatsAndScore();
-            });
+            opt.removeEventListener('click', handleOptionClick);
+            opt.addEventListener('click', handleOptionClick);
         });
+    }
+    
+    function handleOptionClick(e) {
+        if (submitted) { 
+            showMsg('📌 Đã nộp bài, hãy nhấn "Làm lại" để làm mới.', 'warning'); 
+            return; 
+        }
+        const opt = e.currentTarget;
+        const parent = opt.closest('.question-card');
+        const optionsDiv = parent.querySelector('.options');
+        optionsDiv.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
+        opt.classList.add('selected');
+        const qid = parseInt(parent.dataset.qid);
+        const letter = opt.dataset.val;
+        userAnswers[qid] = letter;
+        saveToLocal();
+        updateStatsAndScore();
     }
     
     function calculateScore() {
@@ -372,24 +400,46 @@
     function updateStatsAndScore() {
         const answered = Object.keys(userAnswers).length;
         document.getElementById('answeredCount').innerText = answered;
-        const percent = (answered / TOTAL_QUESTIONS) * 100;
-        document.getElementById('progressFill').style.width = percent + '%';
-        if (submitted) document.getElementById('scoreDisplay').innerText = calculateScore();
-        else document.getElementById('scoreDisplay').innerText = '?';
+        if (TOTAL_QUESTIONS > 0) {
+            const percent = (answered / TOTAL_QUESTIONS) * 100;
+            document.getElementById('progressFill').style.width = percent + '%';
+        }
+        if (submitted) {
+            document.getElementById('scoreDisplay').innerText = calculateScore();
+        } else {
+            document.getElementById('scoreDisplay').innerText = '?';
+        }
     }
     
-    function saveToLocal() { localStorage.setItem('quiz_data', JSON.stringify({ answers: userAnswers, submitted: false })); }
+    function saveToLocal() { 
+        localStorage.setItem('quiz_data', JSON.stringify({ answers: userAnswers, submitted: false })); 
+    }
+    
     function loadFromLocal() {
         const raw = localStorage.getItem('quiz_data');
-        if (raw) try { const d = JSON.parse(raw); userAnswers = d.answers || {}; } catch(e) {}
+        if (raw) {
+            try { 
+                const d = JSON.parse(raw); 
+                userAnswers = d.answers || {}; 
+            } catch(e) {}
+        }
     }
     
     async function submitQuiz() {
-        if (submitted) { showMsg('📌 Bài đã nộp, hãy làm lại nếu muốn.', 'warning'); return; }
+        if (submitted) { 
+            showMsg('📌 Bài đã nộp, hãy làm lại nếu muốn.', 'warning'); 
+            return; 
+        }
         const name = document.getElementById('studentName').value.trim();
-        if (!name) { showMsg('⚠️ Vui lòng nhập họ tên học sinh!', 'warning'); return; }
+        if (!name) { 
+            showMsg('⚠️ Vui lòng nhập họ tên học sinh!', 'warning'); 
+            return; 
+        }
         const answered = Object.keys(userAnswers).length;
-        if (answered === 0) { showMsg('⚠️ Chưa có câu trả lời nào cả!', 'warning'); return; }
+        if (answered === 0) { 
+            showMsg('⚠️ Chưa có câu trả lời nào cả!', 'warning'); 
+            return; 
+        }
         
         const score = calculateScore();
         submitted = true;
@@ -397,7 +447,9 @@
         renderQuestions();
         
         const answerArr = [];
-        for (let i = 1; i <= TOTAL_QUESTIONS; i++) answerArr.push(userAnswers[i] || "");
+        for (let i = 1; i <= TOTAL_QUESTIONS; i++) {
+            answerArr.push(userAnswers[i] || "");
+        }
         const answerStr = answerArr.join(',');
         const answerJson = JSON.stringify(userAnswers);
         
@@ -411,8 +463,14 @@
             chiTiet: answerStr
         };
         
-        fetch(GOOGLE_SCRIPT_URL, { method: "POST", mode: "no-cors", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: new URLSearchParams(payload) })
-            .catch(e => console.log(e));
+        // Gửi dữ liệu (không cần đợi response do mode no-cors)
+        fetch(GOOGLE_SCRIPT_URL, { 
+            method: "POST", 
+            mode: "no-cors", 
+            headers: { "Content-Type": "application/x-www-form-urlencoded" }, 
+            body: new URLSearchParams(payload) 
+        }).catch(e => console.log('Lỗi gửi dữ liệu:', e));
+        
         showMsg(`✅ Thành công! Điểm của bạn: ${score}/${TOTAL_QUESTIONS}. Kết quả đã gửi giáo viên.`, 'success');
     }
     
@@ -423,14 +481,19 @@
         renderQuestions();
         showMsg('🔄 Đã xóa toàn bộ câu trả lời. Bạn có thể làm bài lại.', 'warning');
         document.getElementById('scoreDisplay').innerText = '?';
+        document.getElementById('progressFill').style.width = '0%';
+        document.getElementById('answeredCount').innerText = '0';
     }
     
     function showMsg(text, type) {
         const box = document.getElementById('messageBox');
         box.innerHTML = `<div class="msg ${type}">${text}</div>`;
-        setTimeout(() => { if (box.innerHTML.includes(text)) box.innerHTML = ''; }, 4000);
+        setTimeout(() => { 
+            if (box.innerHTML.includes(text)) box.innerHTML = ''; 
+        }, 4000);
     }
     
+    // Khởi tạo trang
     document.getElementById('totalQ').innerText = TOTAL_QUESTIONS;
     loadFromLocal();
     renderQuestions();
