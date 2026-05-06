@@ -2,123 +2,443 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Chuyển CSV/TSV → data.js</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chuyển đổi CSV/Excel sang JS - Quiz Data</title>
     <style>
-        body { font-family: monospace; padding: 20px; background: #0f172a; color: #e2e8f0; }
-        textarea { width: 100%; height: 250px; font-family: monospace; background: #1e293b; color: #f1f5f9; border: 1px solid #334155; padding: 12px; }
-        button { margin: 10px 5px; padding: 10px 20px; cursor: pointer; background: #3b82f6; color: white; border: none; border-radius: 8px; }
-        pre { background: #1e293b; padding: 15px; border-radius: 12px; overflow-x: auto; max-height: 500px; }
-        .note { background: #334155; padding: 12px; border-radius: 12px; margin: 15px 0; font-size: 0.85rem; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 24px;
+            padding: 32px;
+            margin-bottom: 24px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+        }
+        
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 8px;
+            color: #333;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 24px;
+        }
+        
+        .upload-area {
+            border: 3px dashed #ccc;
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: #f9f9f9;
+        }
+        
+        .upload-area:hover {
+            border-color: #667eea;
+            background: #f0f0ff;
+        }
+        
+        .upload-area.drag-over {
+            border-color: #667eea;
+            background: #e8e8ff;
+        }
+        
+        input[type="file"] {
+            display: none;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-top: 16px;
+            transition: transform 0.2s;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .preview {
+            background: #f5f5f5;
+            border-radius: 16px;
+            padding: 20px;
+            margin-top: 24px;
+            max-height: 400px;
+            overflow: auto;
+        }
+        
+        .preview h3 {
+            margin-bottom: 12px;
+            color: #333;
+        }
+        
+        .preview pre {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 16px;
+            border-radius: 12px;
+            overflow-x: auto;
+            font-size: 12px;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .success {
+            background: #48bb78;
+            color: white;
+            padding: 12px;
+            border-radius: 12px;
+            margin-top: 16px;
+        }
+        
+        .error {
+            background: #f56565;
+            color: white;
+            padding: 12px;
+            border-radius: 12px;
+            margin-top: 16px;
+        }
+        
+        .info {
+            background: #4299e1;
+            color: white;
+            padding: 12px;
+            border-radius: 12px;
+            margin-top: 16px;
+        }
+        
+        .copy-btn {
+            background: #48bb78;
+            margin-left: 12px;
+        }
+        
+        .flex-btns {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 16px;
+        }
+        
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+            font-size: 13px;
+        }
+        
+        th {
+            background: #667eea;
+            color: white;
+        }
     </style>
 </head>
 <body>
-    <h2>🔄 Chuyển CSV/TSV → data.js (UTF-8 an toàn)</h2>
-    <p>Dán nội dung CSV hoặc TSV vào ô bên dưới. <strong>Đảm bảo encoding UTF-8, không bị lỗi font</strong>:</p>
-    <textarea id="inputData" rows="8" placeholder="id,cau_hoi,phuong_an_A,phuong_an_B,phuong_an_C,phuong_an_D,dap_an_dung&#10;1,Cau hoi?,A. Dap an A,B. Dap an B,C. Dap an C,D. Dap an D,A"></textarea>
-    <br>
-    <button id="convertBtn">✨ Chuyển đổi</button>
-    <button id="copyBtn">📋 Copy</button>
-    <button id="sampleBtn">📝 Dán mẫu CSV (10 câu)</button>
-    <h3>Kết quả (copy toàn bộ vào data.js):</h3>
-    <pre id="output"></pre>
-    <div class="note">
-        💡 <strong>Lưu ý quan trọng:</strong><br>
-        - Nếu thấy chữ Trung Quốc bị lỗi (ví dụ: "sỹ" thay vì "女"), hãy dùng TSV hoặc copy CSV từ nguồn đã được xác nhận UTF-8.<br>
-        - <strong>Không chỉnh sửa thủ công</strong> file data.js sau khi sinh để tránh lỗi cấu trúc.<br>
-        - Nếu dùng TSV, file mẫu bên dưới sẽ tự động nhận diện và chuyển đổi.
+<div class="container">
+    <div class="card">
+        <h1>📊 Chuyển đổi CSV/Excel sang JS</h1>
+        <p class="subtitle">Tạo file data.js đúng format cho đề kiểm tra trắc nghiệm</p>
+        
+        <div class="upload-area" id="uploadArea">
+            <p>📁 Kéo thả file CSV/Excel vào đây</p>
+            <p>hoặc</p>
+            <button class="btn" onclick="document.getElementById('fileInput').click()">Chọn file</button>
+            <input type="file" id="fileInput" accept=".csv,.xlsx,.xls">
+        </div>
+        
+        <div class="flex-btns">
+            <button class="btn" id="sampleBtn">📝 Tải mẫu CSV</button>
+            <button class="btn" id="clearBtn">🗑️ Xóa</button>
+        </div>
+        
+        <div id="message"></div>
+        
+        <div id="previewArea" style="display:none;">
+            <div class="preview">
+                <h3>🔍 Xem trước dữ liệu</h3>
+                <div id="tablePreview"></div>
+                <h3>📄 Output JS (data.js)</h3>
+                <pre id="outputCode"></pre>
+                <div class="flex-btns">
+                    <button class="btn" id="copyBtn">📋 Copy code</button>
+                    <button class="btn" id="downloadBtn">💾 Tải file data.js</button>
+                </div>
+            </div>
+        </div>
     </div>
+</div>
 
-    <script>
-        function smartConvertToDataJs(inputText) {
-            let delimiter = ',';
-            if (inputText.includes('\t') && !inputText.includes(',')) {
-                delimiter = '\t';
-                console.log("Phát hiện định dạng TSV (Tab)");
-            } else {
-                console.log("Dùng định dạng CSV (dấu phẩy)");
-            }
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script>
+    const uploadArea = document.getElementById('uploadArea');
+    const fileInput = document.getElementById('fileInput');
+    const message = document.getElementById('message');
+    const previewArea = document.getElementById('previewArea');
+    const tablePreview = document.getElementById('tablePreview');
+    const outputCode = document.getElementById('outputCode');
+    
+    let currentData = [];
+    
+    // Drag & drop
+    uploadArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadArea.classList.add('drag-over');
+    });
+    
+    uploadArea.addEventListener('dragleave', () => {
+        uploadArea.classList.remove('drag-over');
+    });
+    
+    uploadArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadArea.classList.remove('drag-over');
+        const file = e.dataTransfer.files[0];
+        if (file) processFile(file);
+    });
+    
+    fileInput.addEventListener('change', (e) => {
+        if (fileInput.files[0]) processFile(fileInput.files[0]);
+    });
+    
+    function processFile(file) {
+        const extension = file.name.split('.').pop().toLowerCase();
+        
+        if (extension === 'csv') {
+            readCSV(file);
+        } else if (extension === 'xlsx' || extension === 'xls') {
+            readExcel(file);
+        } else {
+            showMessage('Chỉ hỗ trợ file CSV hoặc Excel (.xlsx, .xls)', 'error');
+        }
+    }
+    
+    function readCSV(file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const text = e.target.result;
+            const lines = text.split('\n');
+            const headers = lines[0].split(',').map(h => h.replace(/"/g, '').trim());
             
-            const lines = inputText.trim().split(/\r?\n/);
-            if (lines.length < 2) return "// Lỗi: Dữ liệu phải có header + ít nhất 1 dòng câu hỏi";
-            
-            // Lấy header
-            const headers = lines[0].split(delimiter).map(h => h.trim().toLowerCase());
-            const required = ['id', 'cau_hoi', 'phuong_an_a', 'phuong_an_b', 'phuong_an_c', 'phuong_an_d', 'dap_an_dung'];
-            
-            for (let r of required) {
-                if (!headers.includes(r)) {
-                    return `// Lỗi: Thiếu cột "${r}". Header hiện tại: ${headers.join(', ')}. Cần đúng 7 cột theo thứ tự.`;
-                }
-            }
-            
-            const questions = [];
-            let errorLines = [];
-            
+            const data = [];
             for (let i = 1; i < lines.length; i++) {
                 if (!lines[i].trim()) continue;
-                const parts = lines[i].split(delimiter).map(p => p.trim());
-                if (parts.length < 7) {
-                    errorLines.push(i+1);
-                    continue;
+                const values = parseCSVLine(lines[i]);
+                if (values.length >= 5) {
+                    data.push({
+                        id: i,
+                        cau_hoi: values[0]?.replace(/^"|"$/g, '').trim(),
+                        phuong_an_A: values[1]?.replace(/^"|"$/g, '').trim(),
+                        phuong_an_B: values[2]?.replace(/^"|"$/g, '').trim(),
+                        phuong_an_C: values[3]?.replace(/^"|"$/g, '').trim(),
+                        phuong_an_D: values[4]?.replace(/^"|"$/g, '').trim(),
+                        dap_an_dung: values[5]?.replace(/^"|"$/g, '').trim().toUpperCase()
+                    });
                 }
-                
-                const id = parseInt(parts[0]) || i;
-                const text = parts[1];
-                const optA = parts[2].replace(/^[A-D]\.\s*/, '');
-                const optB = parts[3].replace(/^[A-D]\.\s*/, '');
-                const optC = parts[4].replace(/^[A-D]\.\s*/, '');
-                const optD = parts[5].replace(/^[A-D]\.\s*/, '');
-                const correct = parts[6].toUpperCase();
-                
-                questions.push({
-                    id: id,
-                    text: text,
-                    options: [`A. ${optA}`, `B. ${optB}`, `C. ${optC}`, `D. ${optD}`],
-                    correct: (correct === 'A' || correct === 'B' || correct === 'C' || correct === 'D') ? correct : 'A'
+            }
+            currentData = data;
+            generateOutput();
+        };
+        reader.readAsText(file, 'UTF-8');
+    }
+    
+    function readExcel(file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, { type: 'array' });
+            const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+            const rows = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+            
+            if (rows.length < 2) {
+                showMessage('File Excel không có dữ liệu', 'error');
+                return;
+            }
+            
+            const quizData = [];
+            for (let i = 1; i < rows.length; i++) {
+                const row = rows[i];
+                if (!row[0] || row[0].toString().trim() === '') continue;
+                quizData.push({
+                    id: i,
+                    cau_hoi: row[0]?.toString().trim(),
+                    phuong_an_A: row[1]?.toString().trim(),
+                    phuong_an_B: row[2]?.toString().trim(),
+                    phuong_an_C: row[3]?.toString().trim(),
+                    phuong_an_D: row[4]?.toString().trim(),
+                    dap_an_dung: row[5]?.toString().trim().toUpperCase()
                 });
             }
-            
-            if (errorLines.length > 0) {
-                console.warn(`Bỏ qua dòng ${errorLines.join(', ')} do thiếu cột`);
+            currentData = quizData;
+            generateOutput();
+        };
+        reader.readAsArrayBuffer(file);
+    }
+    
+    function parseCSVLine(line) {
+        const result = [];
+        let inQuote = false;
+        let current = '';
+        
+        for (let i = 0; i < line.length; i++) {
+            const char = line[i];
+            if (char === '"') {
+                inQuote = !inQuote;
+            } else if (char === ',' && !inQuote) {
+                result.push(current);
+                current = '';
+            } else {
+                current += char;
             }
-            
-            if (questions.length === 0) {
-                return "// Lỗi: Không có câu hỏi hợp lệ nào được chuyển đổi!";
-            }
-            
-            let jsContent = "// ========== DỮ LIỆU TỪ CSV/TSV ==========\n";
-            jsContent += "// Được sinh tự động, KHÔNG sửa thủ công\n\n";
-            jsContent += "const QUESTIONS = " + JSON.stringify(questions, null, 2) + ";\n\n";
-            jsContent += "const TOTAL_QUESTIONS = QUESTIONS.length;\n";
-            return jsContent;
+        }
+        result.push(current);
+        return result;
+    }
+    
+    function generateOutput() {
+        if (currentData.length === 0) {
+            showMessage('Không có dữ liệu để chuyển đổi', 'error');
+            return;
         }
         
-        document.getElementById('convertBtn').onclick = () => {
-            const raw = document.getElementById('inputData').value;
-            if (!raw.trim()) { alert('Hãy dán dữ liệu vào ô!'); return; }
-            const result = smartConvertToDataJs(raw);
-            document.getElementById('output').innerText = result;
-            if (result.includes('Lỗi')) {
-                alert('⚠️ Có lỗi xảy ra: ' + result.split('\n')[0]);
-            }
-        };
+        // Tạo bảng preview
+        let tableHtml = '<table><thead><tr>';
+        tableHtml += '<th>ID</th><th>Câu hỏi</th><th>A</th><th>B</th><th>C</th><th>D</th><th>Đáp án</th>';
+        tableHtml += '</tr></thead><tbody>';
         
-        document.getElementById('copyBtn').onclick = () => {
-            const code = document.getElementById('output').innerText;
-            if (!code || code.includes('Lỗi')) { alert('Chưa có kết quả hợp lệ! Hãy chuyển đổi trước.'); return; }
-            navigator.clipboard.writeText(code).then(() => alert('✅ Đã copy nội dung data.js vào clipboard!'));
-        };
+        currentData.slice(0, 10).forEach(item => {
+            tableHtml += `<tr>
+                <td>${item.id}</td>
+                <td>${item.cau_hoi.substring(0, 50)}${item.cau_hoi.length > 50 ? '...' : ''}</td>
+                <td>${item.phuong_an_A}</td>
+                <td>${item.phuong_an_B}</td>
+                <td>${item.phuong_an_C}</td>
+                <td>${item.phuong_an_D}</td>
+                <td><strong>${item.dap_an_dung}</strong></td>
+            </tr>`;
+        });
         
-        document.getElementById('sampleBtn').onclick = () => {
-            const sampleCSV = `id,cau_hoi,phuong_an_A,phuong_an_B,phuong_an_C,phuong_an_D,dap_an_dung
-1,"Chữ 日 (mặt trời), 山 (núi) là loại chữ gì?",Chữ tượng hình,Chữ chỉ sự,Chữ hội ý,Chữ hình thanh,A
-2,"Chữ 上 (trên) và 下 (dưới) thuộc loại chữ nào?",Tượng hình,Chỉ sự,Hội ý,Hình thanh,B
-3,"Chữ 休 (nghỉ) = 人 (người) + 木 (cây) là loại chữ gì?",Tượng hình,Chỉ sự,Hội ý,Hình thanh,C
-4,"Chữ 妈 (mẹ) gồm bộ 女 (nữ) và 马 (mã). Đây là loại chữ gì?",Tượng hình,Chỉ sự,Hội ý,Hình thanh,D
-5,"Chữ 林 = 木 + 木 (rừng) được tạo theo cách nào?",Tượng hình,Chỉ sự,Hội ý,Hình thanh,C`;
-            document.getElementById('inputData').value = sampleCSV;
-            alert('Đã dán mẫu 5 câu (CSV chuẩn UTF-8). Bạn có thể kiểm tra và bấm "Chuyển đổi".');
-        };
-    </script>
+        if (currentData.length > 10) {
+            tableHtml += `<tr><td colspan="7" style="text-align:center">... và ${currentData.length - 10} câu khác</td></tr>`;
+        }
+        tableHtml += '</tbody></table>';
+        tablePreview.innerHTML = tableHtml;
+        
+        // Tạo JS code
+        let jsCode = `// ========== DỮ LIỆU TỪ CSV/EXCEL ==========\n`;
+        jsCode += `// Tổng số câu: ${currentData.length}\n`;
+        jsCode += `// Được sinh tự động bởi Convert Tool\n\n`;
+        jsCode += `const rawQuizData = [\n`;
+        
+        currentData.forEach((item, idx) => {
+            jsCode += `  {\n`;
+            jsCode += `    "id": ${item.id},\n`;
+            jsCode += `    "cau_hoi": "${escapeJS(item.cau_hoi)}",\n`;
+            jsCode += `    "phuong_an_A": "${escapeJS(item.phuong_an_A)}",\n`;
+            jsCode += `    "phuong_an_B": "${escapeJS(item.phuong_an_B)}",\n`;
+            jsCode += `    "phuong_an_C": "${escapeJS(item.phuong_an_C)}",\n`;
+            jsCode += `    "phuong_an_D": "${escapeJS(item.phuong_an_D)}",\n`;
+            jsCode += `    "dap_an_dung": "${item.dap_an_dung}"\n`;
+            jsCode += `  }${idx < currentData.length - 1 ? ',' : ''}\n`;
+        });
+        
+        jsCode += `];\n`;
+        
+        outputCode.textContent = jsCode;
+        previewArea.style.display = 'block';
+        showMessage(`✅ Đã chuyển đổi thành công! ${currentData.length} câu hỏi.`, 'success');
+    }
+    
+    function escapeJS(str) {
+        if (!str) return '';
+        return str
+            .replace(/\\/g, '\\\\')
+            .replace(/"/g, '\\"')
+            .replace(/\n/g, '\\n')
+            .replace(/\r/g, '\\r');
+    }
+    
+    function showMessage(msg, type) {
+        message.innerHTML = `<div class="${type}">${msg}</div>`;
+        setTimeout(() => {
+            if (message.innerHTML.includes(msg)) message.innerHTML = '';
+        }, 5000);
+    }
+    
+    // Copy button
+    document.getElementById('copyBtn')?.addEventListener('click', () => {
+        const code = outputCode.textContent;
+        navigator.clipboard.writeText(code);
+        showMessage('📋 Đã copy code vào clipboard!', 'success');
+    });
+    
+    // Download button
+    document.getElementById('downloadBtn')?.addEventListener('click', () => {
+        const code = outputCode.textContent;
+        const blob = new Blob([code], { type: 'text/javascript' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'data.js';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showMessage('💾 Đã tải file data.js', 'success');
+    });
+    
+    // Sample CSV
+    document.getElementById('sampleBtn')?.addEventListener('click', () => {
+        const sampleCSV = `"Câu hỏi","Đáp án A","Đáp án B","Đáp án C","Đáp án D","Đáp án đúng"
+"Chữ "妈" gồm bộ 女 và 马. Loại chữ này là?","Chữ tượng hình","Chữ chỉ sự vật","Chữ hội ý","Chữ hình thanh","D"
+"Chữ "林" (rừng) gồm hai cây 木. Đây là chữ?","Tượng hình","Hội ý","Giả tá","Hình thanh","B"
+"Chữ "休" (nghỉ) gồm người 亻 dựa vào cây 木. Đây là chữ?","Tượng hình","Chỉ sự vật","Hội ý","Hình thanh","C"`;
+        
+        const blob = new Blob([sampleCSV], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'mau_cau_hoi.csv';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showMessage('📥 Đã tải file mẫu CSV', 'info');
+    });
+    
+    // Clear button
+    document.getElementById('clearBtn')?.addEventListener('click', () => {
+        currentData = [];
+        previewArea.style.display = 'none';
+        fileInput.value = '';
+        showMessage('🗑️ Đã xóa dữ liệu', 'info');
+    });
+</script>
 </body>
 </html>
