@@ -1,4 +1,6 @@
-// ========== DỮ LIỆU TỪ CSV ==========
+// ========== DỮ LIỆU TỪ CSV/TSV ==========
+// Được sinh tự động, KHÔNG sửa thủ công
+
 const QUESTIONS = [
   {
     "id": 1,
@@ -64,7 +66,7 @@ const QUESTIONS = [
       "C. Hành động đã hoàn thành",
       "D. Hành động sắp xảy ra"
     ],
-    "correct": "HÀNH ĐỘNG THƯỜNG XUYÊN"
+    "correct": "A"
   },
   {
     "id": 7,
@@ -75,7 +77,7 @@ const QUESTIONS = [
       "C. Thời gian",
       "D. Hành động đang tiếp diễn"
     ],
-    "correct": "PHƯƠNG HƯỚNG"
+    "correct": "A"
   },
   {
     "id": 8,
@@ -174,7 +176,7 @@ const QUESTIONS = [
       "C. So sánh hơn kém",
       "D. Địa điểm"
     ],
-    "correct": "THỜI GIAN"
+    "correct": "A"
   },
   {
     "id": 17,
@@ -251,7 +253,7 @@ const QUESTIONS = [
       "C. Hành động đã có kinh nghiệm",
       "D. Hành động hoàn thành"
     ],
-    "correct": "HÀNH ĐỘNG TƯƠNG LAI"
+    "correct": "A"
   },
   {
     "id": 24,
@@ -328,7 +330,7 @@ const QUESTIONS = [
       "C. Tính từ",
       "D. Tân ngữ"
     ],
-    "correct": "CHỦ NGỮ"
+    "correct": "A"
   }
 ];
 
