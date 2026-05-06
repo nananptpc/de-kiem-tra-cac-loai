@@ -1,16 +1,16 @@
-cau_hoi	phuong_an_A	phuong_an_B	phuong_an_C	phuong_an_D	dap_an_dung
-Nét ㇀ (gạch chéo lên phải) có tên là gì?	Nét chấm (丶)	Nét hất (㇀)	Nét mác (乛)	Nét ngang (一)	B
-Nét 乛 (gãy cong) có tên chính xác là gì?	Nét ngang	Nét sổ	Nét mác (乛)	Nét phẩy (丿)	C
-Đâu là tên của nét ㇏ (gạch chéo xuống phải, tạo góc)?	Nét phẩy (丿)	Nét mác (乛)	Nét chấm (丶)	Nét mác dài (㇏)	D
-Nét sổ (丨) thường được viết theo hướng nào?	Từ dưới lên trên	Từ trên xuống dưới	Từ trái sang phải	Từ phải sang trái	B
-Nét phẩy trái (丿) có đặc điểm gì?	Từ trên trái xuống dưới phải	Từ trên phải xuống dưới trái	Từ dưới lên trên	Kéo ngang rồi gãy	B
-Nguyên tắc 'ngang trước, sổ sau' được áp dụng cho chữ nào?	十	八	人	口	A
-Với chữ 小, thứ tự đúng là:	Giữa → trái → phải	Trái → giữa → phải	Phải → giữa → trái	Trái → phải → giữa	A
-Chữ 辶 (bộ sước) được viết theo thứ tự nào?	Viết bộ sước trước, sau đó viết phần bên trong	Viết phần bên trong trước, sau đó mới viết bộ sước	Viết nét chấm trước, rồi nét khung	Viết liền mạch một nét	B
-Với chữ 口, nét thứ hai là nét gì?	Sổ trái (丨)	Gập ngang (𠃌)	Ngang dưới (一)	Nét hất (㇀)	B
-Chữ 国 (quốc) có thứ tự viết đúng là:	Khung ngoài → bên trong → đóng khung	Bên trong → khung ngoài	Khung trái → trong → khung phải	Khung dưới → trong → khung trên	A
-Nét cong (⺄) thường xuất hiện ở chữ nào?	乙	十	人	口	A
-Nét gập (𠃍) có điểm gì đặc biệt?	Là kết hợp ngang + sổ	Là kết hợp sổ + ngang	Luôn viết sau cùng	Chỉ có trong một số nét Hán	A
-Khi viết nét chấm (丶), nên đặt bút như thế nào?	Chấm nhẹ từ trên xuống dưới	Kéo dài thành nét sổ	Viết từ dưới lên trên	Chấm ngang từ trái	A
-Thứ tự viết chữ 水 (thủy) là:	Giữa → trái → phải	Trái → giữa → phải	Phải → giữa → trái	Trái → phải → giữa	A
-Nét mác dài (㇏) thường được viết ở bước nào?	Luôn viết đầu tiên	Luôn viết cuối cùng	Viết sau các nét ngang-sổ	Viết trước nét phẩy	C
+cau_hoi,phuong_an_A,phuong_an_B,phuong_an_C,phuong_an_D,dap_an_dung
+Nét ㇀ (gạch chéo lên phải) có tên là gì?,Nét chấm (丶),Nét hất (㇀),Nét mác (乛),Nét ngang (一),B
+Nét 乛 (gãy cong) có tên chính xác là gì?,Nét ngang,Nét sổ,Nét mác (乛),Nét phẩy (丿),C
+"Đâu là tên của nét ㇏ (gạch chéo xuống phải, tạo góc)?",Nét phẩy (丿),Nét mác (乛),Nét chấm (丶),Nét mác dài (㇏),D
+Nét sổ (丨) thường được viết theo hướng nào?,Từ dưới lên trên,Từ trên xuống dưới,Từ trái sang phải,Từ phải sang trái,B
+Nét phẩy trái (丿) có đặc điểm gì?,Từ trên trái xuống dưới phải,Từ trên phải xuống dưới trái,Từ dưới lên trên,Kéo ngang rồi gãy,B
+"Nguyên tắc 'ngang trước, sổ sau' được áp dụng cho chữ nào?",十,八,人,口,A
+"Với chữ 小, thứ tự đúng là:",Giữa → trái → phải,Trái → giữa → phải,Phải → giữa → trái,Trái → phải → giữa,A
+Chữ 辶 (bộ sước) được viết theo thứ tự nào?,"Viết bộ sước trước, sau đó viết phần bên trong","Viết phần bên trong trước, sau đó mới viết bộ sước","Viết nét chấm trước, rồi nét khung",Viết liền mạch một nét,B
+"Với chữ 口, nét thứ hai là nét gì?",Sổ trái (丨),Gập ngang (𠃌),Ngang dưới (一),Nét hất (㇀),B
+Chữ 国 (quốc) có thứ tự viết đúng là:,Khung ngoài → bên trong → đóng khung,Bên trong → khung ngoài,Khung trái → trong → khung phải,Khung dưới → trong → khung trên,A
+Nét cong (⺄) thường xuất hiện ở chữ nào?,乙,十,人,口,A
+Nét gập (𠃍) có điểm gì đặc biệt?,Là kết hợp ngang + sổ,Là kết hợp sổ + ngang,Luôn viết sau cùng,Chỉ có trong một số nét Hán,A
+"Khi viết nét chấm (丶), nên đặt bút như thế nào?",Chấm nhẹ từ trên xuống dưới,Kéo dài thành nét sổ,Viết từ dưới lên trên,Chấm ngang từ trái,A
+Thứ tự viết chữ 水 (thủy) là:,Giữa → trái → phải,Trái → giữa → phải,Phải → giữa → trái,Trái → phải → giữa,A
+Nét mác dài (㇏) thường được viết ở bước nào?,Luôn viết đầu tiên,Luôn viết cuối cùng,Viết sau các nét ngang-sổ,Viết trước nét phẩy,C
