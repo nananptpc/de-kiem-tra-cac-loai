@@ -2,100 +2,122 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Chuyển TSV/CSV → data.js</title>
+    <title>Chuyển CSV/TSV → data.js</title>
     <style>
         body { font-family: monospace; padding: 20px; background: #0f172a; color: #e2e8f0; }
-        textarea { width: 100%; height: 200px; font-family: monospace; background: #1e293b; color: #f1f5f9; border: 1px solid #334155; }
+        textarea { width: 100%; height: 250px; font-family: monospace; background: #1e293b; color: #f1f5f9; border: 1px solid #334155; padding: 12px; }
         button { margin: 10px 5px; padding: 10px 20px; cursor: pointer; background: #3b82f6; color: white; border: none; border-radius: 8px; }
-        pre { background: #1e293b; padding: 15px; border-radius: 12px; overflow-x: auto; }
-        .note { background: #334155; padding: 12px; border-radius: 12px; margin-top: 15px; font-size: 0.85rem; }
+        pre { background: #1e293b; padding: 15px; border-radius: 12px; overflow-x: auto; max-height: 500px; }
+        .note { background: #334155; padding: 12px; border-radius: 12px; margin: 15px 0; font-size: 0.85rem; }
     </style>
 </head>
 <body>
-    <h2>🔄 Chuyển TSV / CSV → data.js</h2>
-    <p>Dán nội dung TSV (Tab-Separated) hoặc CSV vào ô bên dưới:</p>
-    <textarea id="inputData" rows="8" placeholder="id TAB cau_hoi TAB phuong_an_A TAB phuong_an_B TAB phuong_an_C TAB phuong_an_D TAB dap_an_dung&#10;1	TAB Câu hỏi 1?	A. Đáp án A	B. Đáp án B	C. Đáp án C	D. Đáp án D	A"></textarea>
+    <h2>🔄 Chuyển CSV/TSV → data.js (UTF-8 an toàn)</h2>
+    <p>Dán nội dung CSV hoặc TSV vào ô bên dưới. <strong>Đảm bảo encoding UTF-8, không bị lỗi font</strong>:</p>
+    <textarea id="inputData" rows="8" placeholder="id,cau_hoi,phuong_an_A,phuong_an_B,phuong_an_C,phuong_an_D,dap_an_dung&#10;1,Cau hoi?,A. Dap an A,B. Dap an B,C. Dap an C,D. Dap an D,A"></textarea>
     <br>
     <button id="convertBtn">✨ Chuyển đổi</button>
     <button id="copyBtn">📋 Copy</button>
-    <button id="sampleBtn">📝 Dán mẫu TSV</button>
+    <button id="sampleBtn">📝 Dán mẫu CSV (10 câu)</button>
     <h3>Kết quả (copy toàn bộ vào data.js):</h3>
     <pre id="output"></pre>
     <div class="note">
-        💡 <strong>Hướng dẫn:</strong><br>
-        - TSV (Tab-Separated Values) dùng dấu Tab để phân cách, an toàn hơn CSV.<br>
-        - Bạn có thể copy trực tiếp từ Google Sheets (xuất dạng TSV) hoặc dùng mẫu bên trên.<br>
-        - <strong>Quan trọng:</strong> Đảm bảo dữ liệu được lưu với encoding UTF-8.
+        💡 <strong>Lưu ý quan trọng:</strong><br>
+        - Nếu thấy chữ Trung Quốc bị lỗi (ví dụ: "sỹ" thay vì "女"), hãy dùng TSV hoặc copy CSV từ nguồn đã được xác nhận UTF-8.<br>
+        - <strong>Không chỉnh sửa thủ công</strong> file data.js sau khi sinh để tránh lỗi cấu trúc.<br>
+        - Nếu dùng TSV, file mẫu bên dưới sẽ tự động nhận diện và chuyển đổi.
     </div>
 
     <script>
-        function tsvToDataJs(inputText) {
-            // Tự động nhận diện delimiter: Tab hoặc dấu phẩy
-            let delimiter = '\t';
-            if (inputText.includes(',') && !inputText.includes('\t')) {
-                delimiter = ',';
+        function smartConvertToDataJs(inputText) {
+            let delimiter = ',';
+            if (inputText.includes('\t') && !inputText.includes(',')) {
+                delimiter = '\t';
+                console.log("Phát hiện định dạng TSV (Tab)");
+            } else {
+                console.log("Dùng định dạng CSV (dấu phẩy)");
             }
             
             const lines = inputText.trim().split(/\r?\n/);
             if (lines.length < 2) return "// Lỗi: Dữ liệu phải có header + ít nhất 1 dòng câu hỏi";
             
-            // Đọc header
+            // Lấy header
             const headers = lines[0].split(delimiter).map(h => h.trim().toLowerCase());
             const required = ['id', 'cau_hoi', 'phuong_an_a', 'phuong_an_b', 'phuong_an_c', 'phuong_an_d', 'dap_an_dung'];
             
             for (let r of required) {
                 if (!headers.includes(r)) {
-                    return `// Lỗi: Thiếu cột "${r}". Header hiện tại: ${headers.join(', ')}`;
+                    return `// Lỗi: Thiếu cột "${r}". Header hiện tại: ${headers.join(', ')}. Cần đúng 7 cột theo thứ tự.`;
                 }
             }
             
             const questions = [];
+            let errorLines = [];
+            
             for (let i = 1; i < lines.length; i++) {
                 if (!lines[i].trim()) continue;
                 const parts = lines[i].split(delimiter).map(p => p.trim());
                 if (parts.length < 7) {
-                    console.warn(`Dòng ${i+1} bị thiếu cột, bỏ qua`);
+                    errorLines.push(i+1);
                     continue;
                 }
                 
+                const id = parseInt(parts[0]) || i;
+                const text = parts[1];
+                const optA = parts[2].replace(/^[A-D]\.\s*/, '');
+                const optB = parts[3].replace(/^[A-D]\.\s*/, '');
+                const optC = parts[4].replace(/^[A-D]\.\s*/, '');
+                const optD = parts[5].replace(/^[A-D]\.\s*/, '');
+                const correct = parts[6].toUpperCase();
+                
                 questions.push({
-                    id: parseInt(parts[0]) || i,
-                    text: parts[1],
-                    options: [
-                        "A. " + parts[2].replace(/^[A-D]\.\s*/, ''),
-                        "B. " + parts[3].replace(/^[A-D]\.\s*/, ''),
-                        "C. " + parts[4].replace(/^[A-D]\.\s*/, ''),
-                        "D. " + parts[5].replace(/^[A-D]\.\s*/, '')
-                    ],
-                    correct: parts[6].toUpperCase()
+                    id: id,
+                    text: text,
+                    options: [`A. ${optA}`, `B. ${optB}`, `C. ${optC}`, `D. ${optD}`],
+                    correct: (correct === 'A' || correct === 'B' || correct === 'C' || correct === 'D') ? correct : 'A'
                 });
             }
             
-            let jsContent = "// ========== DỮ LIỆU TỪ FILE (TSV/CSV) ==========\n";
+            if (errorLines.length > 0) {
+                console.warn(`Bỏ qua dòng ${errorLines.join(', ')} do thiếu cột`);
+            }
+            
+            if (questions.length === 0) {
+                return "// Lỗi: Không có câu hỏi hợp lệ nào được chuyển đổi!";
+            }
+            
+            let jsContent = "// ========== DỮ LIỆU TỪ CSV/TSV ==========\n";
+            jsContent += "// Được sinh tự động, KHÔNG sửa thủ công\n\n";
             jsContent += "const QUESTIONS = " + JSON.stringify(questions, null, 2) + ";\n\n";
             jsContent += "const TOTAL_QUESTIONS = QUESTIONS.length;\n";
             return jsContent;
         }
         
         document.getElementById('convertBtn').onclick = () => {
-            const input = document.getElementById('inputData').value;
-            if (!input.trim()) { alert('Hãy dán dữ liệu vào ô!'); return; }
-            const result = tsvToDataJs(input);
+            const raw = document.getElementById('inputData').value;
+            if (!raw.trim()) { alert('Hãy dán dữ liệu vào ô!'); return; }
+            const result = smartConvertToDataJs(raw);
             document.getElementById('output').innerText = result;
+            if (result.includes('Lỗi')) {
+                alert('⚠️ Có lỗi xảy ra: ' + result.split('\n')[0]);
+            }
         };
         
         document.getElementById('copyBtn').onclick = () => {
             const code = document.getElementById('output').innerText;
-            if (!code || code.includes('Lỗi')) { alert('Chưa có kết quả hợp lệ!'); return; }
-            navigator.clipboard.writeText(code).then(() => alert('✅ Đã copy!'));
+            if (!code || code.includes('Lỗi')) { alert('Chưa có kết quả hợp lệ! Hãy chuyển đổi trước.'); return; }
+            navigator.clipboard.writeText(code).then(() => alert('✅ Đã copy nội dung data.js vào clipboard!'));
         };
         
         document.getElementById('sampleBtn').onclick = () => {
-            const sample = `id	cau_hoi	phuong_an_A	phuong_an_B	phuong_an_C	phuong_an_D	dap_an_dung
-1	Loại chữ 日 (mặt trời), 山 (núi) là loại chữ gì?	Chữ tượng hình	Chữ chỉ sự	Chữ hội ý	Chữ hình thanh	A
-2	Chữ 上 (trên) và 下 (dưới) thuộc loại chữ nào?	Tượng hình	Chỉ sự	Hội ý	Hình thanh	B
-3	Chữ 休 (nghỉ ngơi) = 人 (người) + 木 (cây) là ví dụ của loại chữ gì?	Tượng hình	Chỉ sự	Hội ý	Hình thanh	C`;
-            document.getElementById('inputData').value = sample;
+            const sampleCSV = `id,cau_hoi,phuong_an_A,phuong_an_B,phuong_an_C,phuong_an_D,dap_an_dung
+1,"Chữ 日 (mặt trời), 山 (núi) là loại chữ gì?",Chữ tượng hình,Chữ chỉ sự,Chữ hội ý,Chữ hình thanh,A
+2,"Chữ 上 (trên) và 下 (dưới) thuộc loại chữ nào?",Tượng hình,Chỉ sự,Hội ý,Hình thanh,B
+3,"Chữ 休 (nghỉ) = 人 (người) + 木 (cây) là loại chữ gì?",Tượng hình,Chỉ sự,Hội ý,Hình thanh,C
+4,"Chữ 妈 (mẹ) gồm bộ 女 (nữ) và 马 (mã). Đây là loại chữ gì?",Tượng hình,Chỉ sự,Hội ý,Hình thanh,D
+5,"Chữ 林 = 木 + 木 (rừng) được tạo theo cách nào?",Tượng hình,Chỉ sự,Hội ý,Hình thanh,C`;
+            document.getElementById('inputData').value = sampleCSV;
+            alert('Đã dán mẫu 5 câu (CSV chuẩn UTF-8). Bạn có thể kiểm tra và bấm "Chuyển đổi".');
         };
     </script>
 </body>
