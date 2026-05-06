@@ -1,8 +1,7 @@
 // ========== DỮ LIỆU TỪ CSV/TSV ==========
 // Được sinh tự động, KHÔNG sửa thủ công
 
-const QUESTIONS = [
- [
+const rawQuizData = [
   {
     "id": 1,
     "cau_hoi": "Chữ \"妈\" gồm bộ 女 và 马. Loại chữ này là?",
@@ -274,4 +273,4 @@ const QUESTIONS = [
     "dap_an_dung": "A"
   }
 ]
-const TOTAL_QUESTIONS = QUESTIONS.length;
+const TOTAL_QUESTIONS = rawQuizData.length;
