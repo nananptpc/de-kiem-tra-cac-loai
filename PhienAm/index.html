@@ -1,1 +1,504 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Đề kiểm tra trắc nghiệm</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: linear-gradient(135deg, #d4f1f9 0%, #b3e4f5 100%);
+            min-height: 100vh;
+            padding: 30px 20px;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        
+        .header-card {
+            background: linear-gradient(135deg, #0f7b8c 0%, #14919b 100%);
+            border-radius: 32px;
+            padding: 28px 32px;
+            margin-bottom: 24px;
+            color: white;
+            box-shadow: 0 12px 25px rgba(15, 123, 140, 0.25);
+        }
+        
+        h1 {
+            font-size: 1.9rem;
+            font-weight: 800;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+        
+        .subtitle {
+            font-size: 0.95rem;
+            opacity: 0.9;
+            font-weight: 500;
+        }
+        
+        .score-panel {
+            background: white;
+            border-radius: 28px;
+            padding: 18px 25px;
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        
+        .score-item {
+            background: #e9f7fa;
+            padding: 10px 20px;
+            border-radius: 60px;
+            font-weight: 600;
+            color: #0f7b8c;
+        }
+        
+        .score-item span {
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin-left: 8px;
+            color: #0a5c68;
+        }
+        
+        .progress-bar {
+            background: #d4f1f9;
+            height: 10px;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+        
+        .progress-fill {
+            background: linear-gradient(90deg, #0f7b8c, #17a2b8);
+            width: 0%;
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.3s ease;
+        }
+        
+        .student-info {
+            background: white;
+            border-radius: 28px;
+            padding: 20px 25px;
+            margin-bottom: 24px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        
+        .student-info input {
+            flex: 1;
+            padding: 14px 20px;
+            border: 2px solid #cceef5;
+            border-radius: 60px;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+        }
+        
+        .student-info input:focus {
+            outline: none;
+            border-color: #0f7b8c;
+            box-shadow: 0 0 0 3px rgba(15, 123, 140, 0.1);
+        }
+        
+        .questions-area {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-bottom: 24px;
+            max-height: 55vh;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+        
+        .questions-area::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .questions-area::-webkit-scrollbar-track {
+            background: #cceef5;
+            border-radius: 10px;
+        }
+        
+        .questions-area::-webkit-scrollbar-thumb {
+            background: #0f7b8c;
+            border-radius: 10px;
+        }
+        
+        .question-card {
+            background: white;
+            border-radius: 24px;
+            padding: 20px 24px;
+            border: 1px solid #cceef5;
+            transition: all 0.2s;
+        }
+        
+        .question-card:hover {
+            box-shadow: 0 6px 14px rgba(15, 123, 140, 0.1);
+        }
+        
+        .question-text {
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 14px;
+            color: #1a4a55;
+            line-height: 1.45;
+        }
+        
+        .options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        
+        .option {
+            background: #f5fbfd;
+            border: 1.5px solid #cceef5;
+            border-radius: 40px;
+            padding: 8px 18px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+            font-size: 0.9rem;
+            color: #1a4a55;
+        }
+        
+        .option:hover {
+            background: #e3f4f9;
+            border-color: #0f7b8c;
+        }
+        
+        .option.selected {
+            background: #0f7b8c;
+            border-color: #0f7b8c;
+            color: white;
+        }
+        
+        .correct-highlight {
+            background: #b8f0e0 !important;
+            border-color: #1c9e7a !important;
+            color: #0a5c4a !important;
+        }
+        
+        .wrong-highlight {
+            background: #ffdede !important;
+            border-color: #e65c5c !important;
+            color: #9e2a2a !important;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #0f7b8c 0%, #14919b 100%);
+            border: none;
+            padding: 16px 28px;
+            border-radius: 60px;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 1rem;
+            color: white;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.2s;
+            box-shadow: 0 4px 10px rgba(15, 123, 140, 0.3);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(15, 123, 140, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #e9f7fa;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 60px;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: #0f7b8c;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 12px;
+            transition: all 0.2s;
+        }
+        
+        .btn-secondary:hover {
+            background: #d4f1f9;
+        }
+        
+        .msg {
+            padding: 14px 20px;
+            border-radius: 24px;
+            margin-top: 16px;
+            text-align: center;
+            font-weight: 500;
+        }
+        
+        .success {
+            background: #b8f0e0;
+            color: #0a5c4a;
+        }
+        
+        .warning {
+            background: #fff3e0;
+            color: #c2780a;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 24px;
+            color: #0a5c68;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        @media (max-width: 600px) {
+            body { padding: 16px; }
+            .header-card { padding: 20px; }
+            h1 { font-size: 1.5rem; }
+            .option { padding: 6px 14px; font-size: 0.85rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header-card">
+        <h1>📘 Đề kiểm tra trắc nghiệm</h1>
+        <p class="subtitle">Chọn đáp án đúng nhất — Kết quả được gửi tự động</p>
+    </div>
 
+    <div class="score-panel">
+        <div class="score-item">🎯 Điểm <span id="scoreDisplay">0</span> / <span id="totalQ"></span></div>
+        <div class="score-item">✅ Đã trả lời <span id="answeredCount">0</span></div>
+        <div class="progress-bar" style="flex:1; min-width:150px;"><div class="progress-fill" id="progressFill"></div></div>
+    </div>
+
+    <div class="student-info">
+        <input type="text" id="studentName" placeholder="👤 Họ và tên học sinh">
+        <input type="text" id="classCode" placeholder="📚 Lớp / Mã đề (tùy chọn)">
+    </div>
+
+    <div class="questions-area" id="questionsContainer"></div>
+
+    <button class="btn-primary" id="submitBtn">📤 NỘP BÀI & XEM ĐIỂM</button>
+    <button class="btn-secondary" id="resetBtn">🔄 Làm lại toàn bộ</button>
+    <div id="messageBox"></div>
+    <footer>💾 Kết quả được lưu vào Google Sheet của giáo viên</footer>
+</div>
+
+<script src="data.js"></script>
+<script>
+    // 👇 THAY URL NÀY BẰNG LINK GOOGLE SHEET CỦA BẠN
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxpxWRfxZ9FJE0XZjdNnBmfhjIsrmcH1NWlohQPDEgOO7gGR-56t2rTR17zYxaP-noH/exec";
+    const SHEET_TAB_NAME = "PhienAm";
+    
+    // Chuyển đổi dữ liệu từ JSON sang format hiển thị
+    let QUESTIONS = [];
+    if (typeof rawQuizData !== 'undefined') {
+        QUESTIONS = rawQuizData.map(item => ({
+            id: item.id,
+            text: item.cau_hoi,
+            options: [
+                "A. " + item.phuong_an_A,
+                "B. " + item.phuong_an_B,
+                "C. " + item.phuong_an_C,
+                "D. " + item.phuong_an_D
+            ],
+            correct: item.dap_an_dung
+        }));
+    }
+    
+    // Tổng số câu hỏi - KHÔNG dùng const để tránh lỗi khai báo trùng
+    let TOTAL_QUESTIONS = QUESTIONS.length;
+    
+    let userAnswers = {};
+    let submitted = false;
+    
+    function renderQuestions() {
+        const container = document.getElementById('questionsContainer');
+        if (!container) return;
+        container.innerHTML = '';
+        
+        if (QUESTIONS.length === 0) {
+            container.innerHTML = '<div class="question-card" style="color:red; text-align:center;">❌ Không tìm thấy dữ liệu câu hỏi. Vui lòng kiểm tra file data.js!</div>';
+            return;
+        }
+        
+        QUESTIONS.forEach(q => {
+            const card = document.createElement('div');
+            card.className = 'question-card';
+            card.dataset.qid = q.id;
+            let optsHtml = '';
+            q.options.forEach((opt, idx) => {
+                const letter = String.fromCharCode(65 + idx);
+                const isSelected = (userAnswers[q.id] === letter);
+                let extraClass = '';
+                if (submitted) {
+                    if (letter === q.correct) extraClass = 'correct-highlight';
+                    else if (isSelected && letter !== q.correct) extraClass = 'wrong-highlight';
+                }
+                optsHtml += `<div class="option ${isSelected ? 'selected' : ''} ${extraClass}" data-val="${letter}">
+                                <span>${opt}</span>
+                            </div>`;
+            });
+            card.innerHTML = `<div class="question-text">${q.id}. ${q.text}</div><div class="options">${optsHtml}</div>`;
+            container.appendChild(card);
+        });
+        attachEvents();
+        updateStatsAndScore();
+    }
+    
+    function attachEvents() {
+        document.querySelectorAll('.option').forEach(opt => {
+            opt.removeEventListener('click', handleOptionClick);
+            opt.addEventListener('click', handleOptionClick);
+        });
+    }
+    
+    function handleOptionClick(e) {
+        if (submitted) { 
+            showMsg('📌 Đã nộp bài, hãy nhấn "Làm lại" để làm mới.', 'warning'); 
+            return; 
+        }
+        const opt = e.currentTarget;
+        const parent = opt.closest('.question-card');
+        const optionsDiv = parent.querySelector('.options');
+        optionsDiv.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
+        opt.classList.add('selected');
+        const qid = parseInt(parent.dataset.qid);
+        const letter = opt.dataset.val;
+        userAnswers[qid] = letter;
+        saveToLocal();
+        updateStatsAndScore();
+    }
+    
+    function calculateScore() {
+        let correct = 0;
+        for (let i = 1; i <= TOTAL_QUESTIONS; i++) {
+            const ans = userAnswers[i];
+            const q = QUESTIONS.find(qq => qq.id == i);
+            if (ans && q && ans === q.correct) correct++;
+        }
+        return correct;
+    }
+    
+    function updateStatsAndScore() {
+        const answered = Object.keys(userAnswers).length;
+        document.getElementById('answeredCount').innerText = answered;
+        if (TOTAL_QUESTIONS > 0) {
+            const percent = (answered / TOTAL_QUESTIONS) * 100;
+            document.getElementById('progressFill').style.width = percent + '%';
+        }
+        if (submitted) {
+            document.getElementById('scoreDisplay').innerText = calculateScore();
+        } else {
+            document.getElementById('scoreDisplay').innerText = '?';
+        }
+    }
+    
+    function saveToLocal() { 
+        localStorage.setItem('quiz_data', JSON.stringify({ answers: userAnswers, submitted: false })); 
+    }
+    
+    function loadFromLocal() {
+        const raw = localStorage.getItem('quiz_data');
+        if (raw) {
+            try { 
+                const d = JSON.parse(raw); 
+                userAnswers = d.answers || {}; 
+            } catch(e) {}
+        }
+    }
+    
+    async function submitQuiz() {
+        if (submitted) { 
+            showMsg('📌 Bài đã nộp, hãy làm lại nếu muốn.', 'warning'); 
+            return; 
+        }
+        const name = document.getElementById('studentName').value.trim();
+        if (!name) { 
+            showMsg('⚠️ Vui lòng nhập họ tên học sinh!', 'warning'); 
+            return; 
+        }
+        const answered = Object.keys(userAnswers).length;
+        if (answered === 0) { 
+            showMsg('⚠️ Chưa có câu trả lời nào cả!', 'warning'); 
+            return; 
+        }
+        
+        const score = calculateScore();
+        submitted = true;
+        document.getElementById('scoreDisplay').innerText = score;
+        renderQuestions();
+        
+        const answerArr = [];
+        for (let i = 1; i <= TOTAL_QUESTIONS; i++) {
+            answerArr.push(userAnswers[i] || "");
+        }
+        const answerStr = answerArr.join(',');
+        const answerJson = JSON.stringify(userAnswers);
+        
+        const payload = {
+            sheetName: SHEET_TAB_NAME,
+            thoiGian: new Date().toISOString(),
+            tenHocSinh: name,
+            maDe: document.getElementById('classCode').value.trim() || "KhongMa",
+            ketQua: `${score}/${TOTAL_QUESTIONS}`,
+            cauTraLoi: answerJson,
+            chiTiet: answerStr
+        };
+        
+        // Gửi dữ liệu (không cần đợi response do mode no-cors)
+        fetch(GOOGLE_SCRIPT_URL, { 
+            method: "POST", 
+            mode: "no-cors", 
+            headers: { "Content-Type": "application/x-www-form-urlencoded" }, 
+            body: new URLSearchParams(payload) 
+        }).catch(e => console.log('Lỗi gửi dữ liệu:', e));
+        
+        showMsg(`✅ Thành công! Điểm của bạn: ${score}/${TOTAL_QUESTIONS}. Kết quả đã gửi giáo viên.`, 'success');
+    }
+    
+    function resetAll() {
+        userAnswers = {};
+        submitted = false;
+        localStorage.removeItem('quiz_data');
+        renderQuestions();
+        showMsg('🔄 Đã xóa toàn bộ câu trả lời. Bạn có thể làm bài lại.', 'warning');
+        document.getElementById('scoreDisplay').innerText = '?';
+        document.getElementById('progressFill').style.width = '0%';
+        document.getElementById('answeredCount').innerText = '0';
+    }
+    
+    function showMsg(text, type) {
+        const box = document.getElementById('messageBox');
+        box.innerHTML = `<div class="msg ${type}">${text}</div>`;
+        setTimeout(() => { 
+            if (box.innerHTML.includes(text)) box.innerHTML = ''; 
+        }, 4000);
+    }
+    
+    // Khởi tạo trang
+    document.getElementById('totalQ').innerText = TOTAL_QUESTIONS;
+    loadFromLocal();
+    renderQuestions();
+    document.getElementById('submitBtn').onclick = submitQuiz;
+    document.getElementById('resetBtn').onclick = resetAll;
+</script>
+</body>
+</html>
