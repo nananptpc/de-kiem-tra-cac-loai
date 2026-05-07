@@ -36,7 +36,7 @@ const rawQuizData = [
     "phuong_an_A": "xǐe",
     "phuong_an_B": "xuě",
     "phuong_an_C": "xüě",
-    "phuong_an_D": "xiě",
+    "phuong_an_D": "xíe",
     "dap_an_dung": "B"
   },
   {
@@ -104,7 +104,7 @@ const rawQuizData = [
   },
   {
     "id": 12,
-    "cau_hoi": "Pinyin “xièxie” (cảm ơn) có thanh điệu đúng là:",
+    "cau_hoi": "Pinyin 谢谢 (cảm ơn) có thanh điệu đúng là:",
     "phuong_an_A": "xièxiē",
     "phuong_an_B": "xièxíe",
     "phuong_an_C": "xièxie",
@@ -113,11 +113,11 @@ const rawQuizData = [
   },
   {
     "id": 13,
-    "cau_hoi": "Âm “r” trong tiếng Trung (ví dụ “rì”) đọc giống:",
-    "phuong_an_A": "Âm “z” nhưng bật hơi",
-    "phuong_an_B": "Âm “l” miệng mở",
-    "phuong_an_C": "Âm “s” rung thanh quản",
-    "phuong_an_D": "Âm “zh” nhưng hữu thanh",
+    "cau_hoi": "Pinyin của từ 日 (mặt trời) là:",
+    "phuong_an_A": "rī",
+    "phuong_an_B": "rí",
+    "phuong_an_C": "ri",
+    "phuong_an_D": "rì",
     "dap_an_dung": "D"
   },
   {
